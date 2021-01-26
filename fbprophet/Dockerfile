@@ -13,7 +13,8 @@ ENV LANG="C.UTF-8" \
 
 # Install the required libraries from APT repo
 RUN echo 'deb http://security.ubuntu.com/ubuntu bionic-security main' >> /etc/apt/sources.list
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
         build-essential \
         ca-certificates \
         curl \
@@ -34,29 +35,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         wget \
         xz-utils \
         zlib1g-dev \
-        fonts-ipafont \
-   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+        fonts-ipafont && \
+   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install pyenv
-COPY pyenv-version.txt python-version.txt /
-
-RUN git clone -b `cat /pyenv-version.txt` --single-branch --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT \
-    && for version in `cat /python-versions.txt`; do pyenv install $version; done \
-    && pyenv global `cat /python-versions.txt` \
-    && rm -rf /tmp/*
-RUN rm pyenv-version.txt python-versions.txt
+COPY pyenv_version.txt python_version.txt /
+RUN git clone -b `cat /pyenv_version.txt` --single-branch --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT && \
+    for version in `cat /python_version.txt`; do pyenv install $version; done && \
+    pyenv global `cat /python_version.txt` && \
+    rm -rf /tmp/* && \
+    rm pyenv_version.txt python_version.txt
 
 # Create Python virtual env for Facebook Prophet
-RUN conda update -y -n base -c defaults conda
-RUN conda install -y -c conda-forge --repodata-fn=repodata.json nodejs
-RUN conda install -y -c conda-forge fbprophet dask distributed
-RUN conda install -y -c plotly plotly
-RUN pip install -U \
-	jupyterlab \
+RUN conda update -y -n base -c defaults conda && \
+    conda install -y -c conda-forge --repodata-fn=repodata.json nodejs && \
+    conda install -y -c conda-forge fbprophet dask distributed && \
+    conda install -y -c plotly plotly && \
+    pip install -U \
+        jupyterlab \
 	jupyter-contrib-core \
 	jupyter-nbextensions-configurator \
         jupyterlab-git \
-	xlrd
+        xlrd
 RUN jupyter labextension install jupyterlab-emacskeys
 RUN jupyter labextension install @jupyterlab/katex-extension
 RUN jupyter labextension install @jupyterlab/toc
